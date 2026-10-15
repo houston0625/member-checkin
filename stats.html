@@ -4,18 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>報到統計</title>
+  <link rel="icon" href="img/logo.jpg">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <main class="container">
-    <header>
-      <h1>報到統計</h1>
-      <div class="toolbar">
-        <label for="date-picker" class="muted">日期</label>
-        <input type="date" id="date-picker">
-        <button type="button" id="today-btn">今天</button>
+    <header class="page-header">
+      <div class="brand">
+        <img class="logo" src="img/logo.jpg" alt="全盈+PAY">
+        <h1>報到統計</h1>
       </div>
+      <a class="nav-btn" href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        回到報到頁
+      </a>
     </header>
+
+    <div class="toolbar">
+      <label for="date-picker" class="muted">日期</label>
+      <input type="date" id="date-picker">
+      <button type="button" class="btn-secondary" id="today-btn">今天</button>
+    </div>
 
     <section class="stats-grid" aria-label="統計數字">
       <div class="stat primary">
@@ -34,11 +43,6 @@
         <div class="sub" id="prev-sub">&nbsp;</div>
       </div>
       <div class="stat">
-        <div class="label">兩天都報到</div>
-        <div class="value" id="returning-value">–</div>
-        <div class="sub" id="returning-sub">&nbsp;</div>
-      </div>
-      <div class="stat">
         <div class="label">重複輸入</div>
         <div class="value" id="dup-value">–</div>
         <div class="sub">次</div>
@@ -52,7 +56,6 @@
     </section>
 
     <p class="status-line muted" id="status-line">載入中…</p>
-    <p class="status-line muted"><a href="index.html">回到報到頁</a></p>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>

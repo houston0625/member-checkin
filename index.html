@@ -4,24 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>會員報到</title>
+  <link rel="icon" href="img/logo.jpg">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="checkin-page">
   <main class="container">
-    <header>
-      <h1>會員報到</h1>
-      <span class="muted" id="today-date"></span>
+    <header class="page-header">
+      <div class="brand">
+        <img class="logo" src="img/logo.jpg" alt="全盈+PAY">
+        <div>
+          <h1>會員報到</h1>
+          <span class="muted" id="today-date"></span>
+        </div>
+      </div>
+      <a class="nav-btn" href="stats.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        查看統計
+      </a>
     </header>
 
     <section class="card">
       <form class="checkin-form" id="checkin-form" autocomplete="off" novalidate>
         <label for="member-id">請輸入會員代號</label>
         <div class="row">
-          <input id="member-id" name="memberId" type="text" inputmode="text"
-                 maxlength="50" autocapitalize="off" spellcheck="false" autofocus required>
+          <input id="member-id" name="memberId" type="text" inputmode="numeric"
+                 maxlength="7" placeholder="7 碼數字" spellcheck="false" autofocus required>
           <button type="submit" id="submit-btn">確認</button>
         </div>
-        <p class="hint muted">輸入後按「確認」或 Enter 鍵送出</p>
+        <p class="hint muted">輸入 7 碼數字後按「確認」或 Enter 鍵送出（開頭的 0 也要輸入）</p>
       </form>
 
       <div class="result" id="result" role="status" aria-live="polite" hidden></div>
@@ -39,8 +49,6 @@
         <div class="sub" id="hour-label">&nbsp;</div>
       </div>
     </section>
-
-    <p class="status-line muted"><a href="stats.html">查看統計</a></p>
   </main>
 
   <script src="js/config.js"></script>

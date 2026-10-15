@@ -83,17 +83,6 @@
       $('prev-sub').textContent = '前一天沒有資料';
     }
 
-    // 兩天都報到
-    if (data.returning == null) {
-      $('returning-value').textContent = '–';
-      $('returning-sub').textContent = '前一天沒有資料';
-    } else {
-      $('returning-value').textContent = fmt(data.returning);
-      $('returning-sub').textContent = data.total > 0
-        ? `佔${data.isToday ? '今日' : '當日'} ${Math.round(data.returning / data.total * 100)}%`
-        : '人';
-    }
-
     $('dup-value').textContent = fmt(data.duplicateAttempts);
 
     renderChart(data);

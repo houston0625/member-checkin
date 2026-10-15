@@ -17,7 +17,15 @@ API 規格請見上層資料夾的 `需求規格.md` 第 4.1 節。
    - 把兩張工作表的 A 欄設為純文字，時間欄設為日期時間格式
    - 檢查標題列是否正確，不正確時會顯示錯誤
 
-## 3. 部署成網頁應用程式
+## 3. 設定管理密碼（刪除功能用）
+
+1. **專案設定（齒輪）→ 指令碼屬性 → 新增指令碼屬性**。
+2. 屬性：`ADMIN_KEY`，值：自訂一組夠長的密碼（建議 16 字以上）。
+3. 管理頁 `admin.html` 刪除會員時要輸入這組密碼。沒有設定時，刪除功能會回傳錯誤。
+
+每次刪除都會記到「刪除紀錄」工作表（第一次刪除或執行 `setup` 時自動建立）。
+
+## 4. 部署成網頁應用程式
 
 1. **部署 → 新增部署作業** → 類型選「網頁應用程式」。
 2. 執行身分：**我**；誰可以存取：**所有人**。
@@ -25,7 +33,7 @@ API 規格請見上層資料夾的 `需求規格.md` 第 4.1 節。
 
 之後修改程式時，請用 **部署 → 管理部署作業 → 編輯 → 版本選「新版本」**，網址才不會改變。
 
-## 4. 快速測試
+## 5. 快速測試
 
 在瀏覽器開啟（把網址換成你的 `/exec` 網址）：
 
@@ -41,8 +49,8 @@ https://script.google.com/macros/s/XXXX/exec?action=stats
 fetch('https://script.google.com/macros/s/XXXX/exec', {
   method: 'POST',
   headers: { 'Content-Type': 'text/plain' },
-  body: JSON.stringify({ action: 'checkin', memberId: 'TEST001' })
+  body: JSON.stringify({ action: 'checkin', memberId: '0000001' })
 }).then(r => r.json()).then(console.log);
 ```
 
-測試完記得到試算表刪掉 `TEST001` 的紀錄。
+測試完可以在 `admin.html` 刪掉 `0000001` 的紀錄。

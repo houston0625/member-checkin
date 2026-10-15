@@ -4,16 +4,17 @@
   --text: #1c2430;
   --muted: #5d6878;
   --border: #dde2ea;
-  --primary: #1f6feb;
-  --primary-hover: #1a5fd0;
+  --primary: #e04000;
+  --primary-hover: #c43800;
+  --primary-soft: #fff0e8;
   --success: #1a7f45;
   --success-bg: #e5f5ec;
   --warning: #9a5b00;
   --warning-bg: #fff3dc;
   --danger: #b42318;
   --danger-bg: #fdecea;
-  --chart-bar: #8fb4f2;
-  --chart-line: #1f6feb;
+  --chart-bar: #ffb894;
+  --chart-line: #e04000;
   --chart-prev: #9aa4b2;
   --radius: 14px;
   --shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
@@ -26,16 +27,17 @@
     --text: #e6eaf0;
     --muted: #9aa4b2;
     --border: #2c3440;
-    --primary: #4c8df6;
-    --primary-hover: #6aa1f8;
+    --primary: #ff6a2b;
+    --primary-hover: #ff8550;
+    --primary-soft: #3a2116;
     --success: #5fd08e;
     --success-bg: #12301f;
     --warning: #f2b552;
     --warning-bg: #352812;
     --danger: #f2877d;
     --danger-bg: #3a1a17;
-    --chart-bar: #35558a;
-    --chart-line: #6aa1f8;
+    --chart-bar: #7a3a1c;
+    --chart-line: #ff8550;
     --chart-prev: #6b7686;
     --shadow: none;
   }
@@ -57,16 +59,66 @@ body {
   padding: 24px 16px 48px;
 }
 
-header {
+/* ---------- 頁首 ---------- */
+
+.page-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 24px;
 }
 
-h1 { font-size: 1.6rem; margin: 0; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.brand .logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+}
+
+.brand .muted { font-size: 0.95rem; }
+
+h1 { font-size: 1.6rem; margin: 0; line-height: 1.3; }
+
+/* 頁首右側的頁面切換按鈕 */
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 20px;
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-btn:hover { background: var(--primary); color: #fff; }
+.nav-btn:focus-visible { outline: 3px solid var(--primary-soft); outline-offset: 2px; }
 
 .muted { color: var(--muted); }
 
@@ -126,6 +178,14 @@ button {
 }
 
 button:hover { background: var(--primary-hover); }
+
+button.btn-secondary {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+button.btn-secondary:hover { background: var(--primary-soft); }
 button:disabled { opacity: 0.6; cursor: wait; }
 
 .hint { font-size: 0.9rem; margin-top: 8px; }
@@ -183,18 +243,19 @@ button:disabled { opacity: 0.6; cursor: wait; }
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .toolbar input[type="date"] {
   font: inherit;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
   color: var(--text);
 }
 
-.toolbar button { font-size: 0.95rem; padding: 6px 14px; }
+.toolbar button { font-size: 0.95rem; padding: 8px 18px; }
 
 .chart-wrap { position: relative; height: 360px; }
 
@@ -202,6 +263,9 @@ button:disabled { opacity: 0.6; cursor: wait; }
 .status-line.error { color: var(--danger); }
 
 @media (max-width: 480px) {
+  .brand .logo { width: 52px; height: 52px; border-radius: 13px; }
+  h1 { font-size: 1.4rem; }
+  .nav-btn { width: 100%; justify-content: center; }
   .checkin-form .row { flex-direction: column; }
   .stats-grid { gap: 12px; }
   .stat { padding: 12px 14px; }
@@ -209,3 +273,16 @@ button:disabled { opacity: 0.6; cursor: wait; }
   .stats-grid .stat.primary .value { font-size: 2.4rem; }
   .chart-wrap { height: 280px; }
 }
+
+/* ---------- 管理頁 ---------- */
+
+.admin-form input {
+  display: block;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.admin-form button { width: 100%; }
+
+button.btn-danger { background: var(--danger); }
+button.btn-danger:hover { background: var(--danger); filter: brightness(0.9); }

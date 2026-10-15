@@ -16,14 +16,14 @@
     event.preventDefault();
     if (submitting) return;
 
-    const memberId = input.value.trim();
+    const memberId = normalizeMemberId(input.value);
     if (!memberId) {
       showResult('error', '請輸入會員代號');
       input.focus();
       return;
     }
     if (!MEMBER_ID_PATTERN.test(memberId)) {
-      showResult('error', '會員代號格式不正確', '只能包含英文字母、數字、底線或連字號');
+      showResult('error', '會員代號格式不正確', '會員代號必須是 7 碼數字，開頭的 0 也要輸入');
       input.select();
       return;
     }
@@ -34,8 +34,8 @@
       if (data.status === 'success') {
         showResult('success', `${memberId} 報到成功`, `報到時間 ${timeOfIso(data.checkinTime)}`);
       } else {
-        showResult('duplicate', `${memberId} 今天已經報到過了`,
-          `今天的報到時間是 ${timeOfIso(data.lastCheckinTime)}，不需要再輸入`);
+        showResult('duplicate', `${memberId} 已經報到過了`,
+          `報到時間是 ${dateTimeOfIso(data.lastCheckinTime)}，不需要再輸入`);
       }
       updateCounts(data.today, data.checkinTime);
       input.value = '';

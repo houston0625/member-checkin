@@ -42,6 +42,15 @@ const Api = {
     });
   },
 
+  /** 刪除指定會員的報到與重複嘗試紀錄，需要管理密碼。 */
+  deleteMember(memberId, adminKey) {
+    return this.request(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'delete', memberId, adminKey })
+    });
+  },
+
   /** 取得統計；date 省略時為今天，格式 yyyy-MM-dd。 */
   stats(date) {
     const params = new URLSearchParams({ action: 'stats' });
@@ -53,6 +62,18 @@ const Api = {
 /** "2026-10-16T08:15:00+08:00" → "08:15:00"，直接取字串，不受瀏覽器時區影響。 */
 function timeOfIso(iso) {
   return iso ? iso.slice(11, 19) : '';
+}
+
+/** "2026-10-16T08:15:00+08:00" → "2026-10-16 08:15:00" */
+function dateTimeOfIso(iso) {
+  return iso ? `${iso.slice(0, 10)} ${timeOfIso(iso)}` : '';
+}
+
+/** 去掉空白並把全形數字轉成半形，避免輸入法造成格式錯誤。 */
+function normalizeMemberId(value) {
+  return String(value)
+    .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/\s+/g, '');
 }
 
 function hourRange(hour) {

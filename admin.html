@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>刪除會員紀錄</title>
+  <link rel="icon" href="img/logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="checkin-page">
+  <main class="container">
+    <header class="page-header">
+      <div class="brand">
+        <img class="logo" src="img/logo.jpg" alt="全盈+PAY">
+        <h1>刪除會員紀錄</h1>
+      </div>
+      <a class="nav-btn" href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        回到報到頁
+      </a>
+    </header>
+
+    <section class="card">
+      <form class="checkin-form admin-form" id="delete-form" autocomplete="off" novalidate>
+        <label for="member-id">要刪除的會員代號</label>
+        <input id="member-id" name="memberId" type="text" inputmode="numeric"
+               maxlength="7" placeholder="7 碼數字" spellcheck="false" autofocus required>
+
+        <label for="admin-key">管理密碼</label>
+        <input id="admin-key" name="adminKey" type="password" autocomplete="current-password" required>
+
+        <button type="submit" class="btn-danger" id="submit-btn">刪除</button>
+        <p class="hint muted">會刪除這個代號在「登入紀錄」與「重複嘗試」的所有資料，刪除後該會員可以重新報到。</p>
+      </form>
+
+      <div class="result" id="result" role="status" aria-live="polite" hidden></div>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

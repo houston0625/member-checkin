@@ -1,8 +1,9 @@
 /**
  * member-checkin 後端 API（綁定在 member-checkin 試算表上的 Apps Script）
  *
- * POST  { "action": "checkin", "memberId": "A0012" }   會員登記
- * GET   ?action=stats[&date=yyyy-MM-dd]                當日（或指定日期）統計
+ * POST  { "action": "checkin", "memberId": "0012345" }                     會員登記
+ * POST  { "action": "delete", "memberId": "0012345", "adminKey": "..." }   刪除指定會員的紀錄
+ * GET   ?action=stats[&date=yyyy-MM-dd]                                    當日（或指定日期）統計
  *
  * 前端 fetch POST 時請用 Content-Type: text/plain，body 放 JSON 字串，避免 CORS preflight。
  */
@@ -10,10 +11,14 @@
 const TZ = 'Asia/Taipei';
 const SHEET_CHECKIN = '登入紀錄';
 const SHEET_DUPLICATE = '重複嘗試';
+const SHEET_DELETED = '刪除紀錄';
 
-// 會員代號允許的格式：英數字、底線、連字號，1 到 50 字。
-// 不允許 = + @ 等開頭字元，避免寫入試算表時被當成公式。
-const MEMBER_ID_PATTERN = /^[A-Za-z0-9_-]{1,50}$/;
+// 會員代號固定 7 碼數字，開頭可以是 0（例如 0012345）。
+// 一律當成字串處理，寫入試算表時 A 欄設成純文字，開頭的 0 才不會消失。
+const MEMBER_ID_PATTERN = /^\d{7}$/;
+
+// 管理密碼存在「專案設定 → 指令碼屬性」，名稱為 ADMIN_KEY，不寫在程式碼裡。
+const ADMIN_KEY_PROPERTY = 'ADMIN_KEY';
 
 const LOCK_TIMEOUT_MS = 10000;
 const SCAN_CHUNK_ROWS = 500;
@@ -36,6 +41,7 @@ function doPost(e) {
     const body = parseBody_(e);
     const action = body.action || 'checkin';
     if (action === 'checkin') return checkin_(body.memberId);
+    if (action === 'delete') return deleteMember_(body.memberId, body.adminKey);
     throw new ApiError_('UNKNOWN_ACTION', '不支援的動作：' + action);
   });
 }
@@ -45,10 +51,7 @@ function doPost(e) {
 // ---------------------------------------------------------------------------
 
 function checkin_(rawMemberId) {
-  const memberId = String(rawMemberId == null ? '' : rawMemberId).trim();
-  if (!MEMBER_ID_PATTERN.test(memberId)) {
-    throw new ApiError_('INVALID_MEMBER_ID', '會員代號格式不正確');
-  }
+  const memberId = parseMemberId_(rawMemberId);
 
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(LOCK_TIMEOUT_MS)) {
@@ -63,10 +66,12 @@ function checkin_(rawMemberId) {
     const today = formatDate_(now);
     const hour = Number(Utilities.formatDate(now, TZ, 'H'));
 
-    // 同一個日曆日（台北時間）只能成功登記一次。
-    // 往回掃到日期早於今天就停止，掃到的就是今天全部紀錄，順便拿來算人數。
+    // 每個會員代號只能成功登記一次，不分日期。
+    // 用 TextFinder 搜尋整個 A 欄，由上往下找到的第一筆就是最早的登記。
+    const existing = findFirstCheckin_(checkinSheet, memberId);
+
+    // 今天的紀錄只用來算人數。
     const todayRows = collectRows_(checkinSheet, today, today);
-    const existing = findEarliest_(todayRows, memberId);
 
     let status;
     let lastCheckinTime = null;
@@ -99,6 +104,80 @@ function checkin_(rawMemberId) {
 }
 
 // ---------------------------------------------------------------------------
+// 刪除指定會員
+// ---------------------------------------------------------------------------
+
+/**
+ * 刪除該會員代號在「登入紀錄」與「重複嘗試」的所有資料，刪除後可以重新報到。
+ * 每次刪除都會記到「刪除紀錄」工作表，方便事後查核。
+ */
+function deleteMember_(rawMemberId, adminKey) {
+  checkAdminKey_(adminKey);
+  const memberId = parseMemberId_(rawMemberId);
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(LOCK_TIMEOUT_MS)) {
+    throw new ApiError_('BUSY', '系統忙碌中，請稍後再試');
+  }
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const checkinSheet = getSheet_(ss, SHEET_CHECKIN);
+    const duplicateSheet = getSheet_(ss, SHEET_DUPLICATE);
+
+    const checkinRows = findMemberRows_(checkinSheet, memberId);
+    const duplicateRows = findMemberRows_(duplicateSheet, memberId);
+    if (checkinRows.length === 0 && duplicateRows.length === 0) {
+      throw new ApiError_('NOT_FOUND', '找不到會員代號 ' + memberId + ' 的紀錄');
+    }
+
+    deleteRows_(checkinSheet, checkinRows);
+    deleteRows_(duplicateSheet, duplicateRows);
+    appendRow_(getOrCreateDeletedSheet_(ss), [memberId, new Date(), checkinRows.length, duplicateRows.length]);
+
+    SpreadsheetApp.flush();
+
+    return {
+      memberId: memberId,
+      deleted: { checkin: checkinRows.length, duplicate: duplicateRows.length }
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function checkAdminKey_(adminKey) {
+  const expected = PropertiesService.getScriptProperties().getProperty(ADMIN_KEY_PROPERTY);
+  if (!expected) {
+    throw new ApiError_('ADMIN_NOT_CONFIGURED', '尚未設定管理密碼，請在指令碼屬性新增 ' + ADMIN_KEY_PROPERTY);
+  }
+  if (String(adminKey == null ? '' : adminKey) !== expected) {
+    // 稍微延遲，降低被暴力猜密碼的速度。
+    Utilities.sleep(1000);
+    throw new ApiError_('UNAUTHORIZED', '管理密碼不正確');
+  }
+}
+
+/** 回傳 A 欄完全等於 memberId 的列號（由小到大）。 */
+function findMemberRows_(sheet, memberId) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  return sheet.getRange(2, 1, lastRow - 1, 1)
+    .createTextFinder(memberId)
+    .matchCase(true)
+    .matchEntireCell(true)
+    .findAll()
+    .map(function (range) { return range.getRow(); });
+}
+
+/** 從最下面一列開始刪，前面的列號才不會跑掉。 */
+function deleteRows_(sheet, rows) {
+  rows.slice().sort(function (a, b) { return b - a; }).forEach(function (row) {
+    sheet.deleteRow(row);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // 統計
 // ---------------------------------------------------------------------------
 
@@ -126,7 +205,6 @@ function stats_(rawDate) {
   const prevRows = rows.filter(function (r) { return r.date === prevDate; });
 
   let previousDay = null;
-  let returning = null;
   if (prevRows.length > 0) {
     const sameTimeCumulative = isToday
       ? prevRows.filter(function (r) { return r.timeOfDay <= nowTimeOfDay; }).length
@@ -137,10 +215,6 @@ function stats_(rawDate) {
       sameTimeCumulative: sameTimeCumulative,
       hours: buildHours_(prevRows, 23)
     };
-
-    const prevIds = {};
-    prevRows.forEach(function (r) { prevIds[r.id] = true; });
-    returning = countDistinct_(dayRows.filter(function (r) { return prevIds[r.id]; }));
   }
 
   const duplicateAttempts = collectRows_(getSheet_(ss, SHEET_DUPLICATE), date, date).length;
@@ -152,7 +226,6 @@ function stats_(rawDate) {
     total: dayRows.length,
     hours: buildHours_(dayRows, lastHour),
     previousDay: previousDay,
-    returning: returning,
     duplicateAttempts: duplicateAttempts
   };
 }
@@ -210,6 +283,16 @@ function collectRows_(sheet, fromDate, toDate) {
   return result;
 }
 
+/** 找出該會員最早一筆成功登記；沒有登記過時回傳 null。 */
+function findFirstCheckin_(sheet, memberId) {
+  const rows = findMemberRows_(sheet, memberId);
+  for (let i = 0; i < rows.length; i++) {
+    const time = sheet.getRange(rows[i], 2).getValue();
+    if (time instanceof Date && !isNaN(time.getTime())) return { row: rows[i], time: time };
+  }
+  return null;
+}
+
 /** 在最後一列之後寫入一列；A 欄先設成純文字，保留開頭的 0。 */
 function appendRow_(sheet, rowValues) {
   const row = sheet.getLastRow() + 1;
@@ -223,18 +306,16 @@ function getSheet_(ss, name) {
   return sheet;
 }
 
-function findEarliest_(rows, memberId) {
-  let found = null;
-  rows.forEach(function (r) {
-    if (r.id === memberId && (!found || r.time < found.time)) found = r;
-  });
-  return found;
-}
-
-function countDistinct_(rows) {
-  const seen = {};
-  rows.forEach(function (r) { seen[r.id] = true; });
-  return Object.keys(seen).length;
+/** 「刪除紀錄」工作表不存在時自動建立。 */
+function getOrCreateDeletedSheet_(ss) {
+  let sheet = ss.getSheetByName(SHEET_DELETED);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_DELETED);
+    sheet.getRange(1, 1, 1, 4).setValues([['會員代號', '刪除時間', '刪除登入紀錄筆數', '刪除重複嘗試筆數']]);
+    sheet.getRange('A:A').setNumberFormat('@');
+    sheet.getRange('B:B').setNumberFormat('yyyy-MM-dd HH:mm:ss');
+  }
+  return sheet;
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +356,15 @@ function parseBody_(e) {
   return (e && e.parameter) || {};
 }
 
+/** 去掉空白並驗證格式。不轉成數字，保留開頭的 0。 */
+function parseMemberId_(raw) {
+  const memberId = String(raw == null ? '' : raw).replace(/\s+/g, '');
+  if (!MEMBER_ID_PATTERN.test(memberId)) {
+    throw new ApiError_('INVALID_MEMBER_ID', '會員代號必須是 7 碼數字');
+  }
+  return memberId;
+}
+
 function formatDate_(date) {
   return Utilities.formatDate(date, TZ, 'yyyy-MM-dd');
 }
@@ -301,6 +391,7 @@ function shiftDate_(dateStr, days) {
 
 /**
  * 設定試算表時區、兩張工作表的 A 欄純文字格式，並檢查標題列。
+ * 也會建立「刪除紀錄」工作表，並提醒是否已設定管理密碼。
  * 只會在編輯器手動執行，網頁應用程式無法呼叫。
  */
 function setup() {
@@ -326,6 +417,13 @@ function setup() {
       sheet.getRange(2, i + 1, sheet.getMaxRows() - 1, 1).setNumberFormat(format);
     });
   });
+
+  getOrCreateDeletedSheet_(ss);
+
+  if (!PropertiesService.getScriptProperties().getProperty(ADMIN_KEY_PROPERTY)) {
+    console.warn('尚未設定管理密碼：請到「專案設定 → 指令碼屬性」新增 ' + ADMIN_KEY_PROPERTY +
+      '，否則無法使用刪除功能。');
+  }
 
   console.log('設定完成：時區 ' + ss.getSpreadsheetTimeZone());
 }
