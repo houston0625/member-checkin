@@ -51,6 +51,21 @@
     </section>
   </main>
 
+  <dialog class="alert-dialog" id="dup-dialog" aria-labelledby="dup-title">
+    <form method="dialog">
+      <div class="alert-head">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L2 21h20L12 3zM12 10v5M12 18v.01"/></svg>
+        <h2 id="dup-title">此會員已經報到過了</h2>
+      </div>
+      <div class="alert-body">
+        <div class="alert-id" id="dup-member-id"></div>
+        <p>第一次報到時間：<strong id="dup-time"></strong></p>
+        <p>每個會員只能報到一次，請不要重複輸入。</p>
+        <button type="submit" id="dup-ok">我知道了</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/checkin.js"></script>

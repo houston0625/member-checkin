@@ -34,8 +34,10 @@
       if (data.status === 'success') {
         showResult('success', `${memberId} 報到成功`, `報到時間 ${timeOfIso(data.checkinTime)}`);
       } else {
+        const firstTime = dateTimeOfIso(data.lastCheckinTime);
         showResult('duplicate', `${memberId} 已經報到過了`,
-          `報到時間是 ${dateTimeOfIso(data.lastCheckinTime)}，不需要再輸入`);
+          `報到時間是 ${firstTime}，不需要再輸入`);
+        showDuplicateDialog(memberId, firstTime);
       }
       updateCounts(data.today, data.checkinTime);
       input.value = '';
@@ -43,9 +45,21 @@
       showResult('error', '報到失敗', err.message);
     } finally {
       setSubmitting(false);
-      input.focus();
+      // 彈跳視窗開著時焦點留在「我知道了」，關閉後才回到輸入框。
+      if (!dupDialog.open) input.focus();
     }
   });
+
+  // 重複報到時跳出視窗，必須按「我知道了」（或 Enter、Esc）確認才能繼續。
+  const dupDialog = document.getElementById('dup-dialog');
+  dupDialog.addEventListener('close', () => input.focus());
+
+  function showDuplicateDialog(memberId, firstTime) {
+    document.getElementById('dup-member-id').textContent = memberId;
+    document.getElementById('dup-time').textContent = firstTime;
+    dupDialog.showModal();
+    document.getElementById('dup-ok').focus();
+  }
 
   function setSubmitting(value) {
     submitting = value;
