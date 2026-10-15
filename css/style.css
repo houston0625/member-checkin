@@ -286,3 +286,14 @@ button:disabled { opacity: 0.6; cursor: wait; }
 
 button.btn-danger { background: var(--danger); }
 button.btn-danger:hover { background: var(--danger); filter: brightness(0.9); }
+
+/* 頁尾的次要連結（管理頁入口） */
+
+.footer-link {
+  margin-top: 32px;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.footer-link a { color: var(--muted); }
+.footer-link a:hover { color: var(--danger); }
