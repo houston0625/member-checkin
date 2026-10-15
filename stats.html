@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>報到統計</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>報到統計</h1>
+      <div class="toolbar">
+        <label for="date-picker" class="muted">日期</label>
+        <input type="date" id="date-picker">
+        <button type="button" id="today-btn">今天</button>
+      </div>
+    </header>
+
+    <section class="stats-grid" aria-label="統計數字">
+      <div class="stat primary">
+        <div class="label" id="total-label">今日累積</div>
+        <div class="value" id="total">–</div>
+        <div class="sub" id="total-sub">&nbsp;</div>
+      </div>
+      <div class="stat">
+        <div class="label" id="hour-label">本小時新增</div>
+        <div class="value" id="hour-value">–</div>
+        <div class="sub" id="hour-sub">&nbsp;</div>
+      </div>
+      <div class="stat">
+        <div class="label">前一天同時段</div>
+        <div class="value" id="prev-value">–</div>
+        <div class="sub" id="prev-sub">&nbsp;</div>
+      </div>
+      <div class="stat">
+        <div class="label">兩天都報到</div>
+        <div class="value" id="returning-value">–</div>
+        <div class="sub" id="returning-sub">&nbsp;</div>
+      </div>
+      <div class="stat">
+        <div class="label">重複輸入</div>
+        <div class="value" id="dup-value">–</div>
+        <div class="sub">次</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="chart-wrap">
+        <canvas id="hourly-chart" aria-label="每小時新增與累積人數圖表" role="img"></canvas>
+      </div>
+    </section>
+
+    <p class="status-line muted" id="status-line">載入中…</p>
+    <p class="status-line muted"><a href="index.html">回到報到頁</a></p>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/stats.js"></script>
+</body>
+</html>

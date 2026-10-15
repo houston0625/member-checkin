@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>會員報到</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="checkin-page">
+  <main class="container">
+    <header>
+      <h1>會員報到</h1>
+      <span class="muted" id="today-date"></span>
+    </header>
+
+    <section class="card">
+      <form class="checkin-form" id="checkin-form" autocomplete="off" novalidate>
+        <label for="member-id">請輸入會員代號</label>
+        <div class="row">
+          <input id="member-id" name="memberId" type="text" inputmode="text"
+                 maxlength="50" autocapitalize="off" spellcheck="false" autofocus required>
+          <button type="submit" id="submit-btn">確認</button>
+        </div>
+        <p class="hint muted">輸入後按「確認」或 Enter 鍵送出</p>
+      </form>
+
+      <div class="result" id="result" role="status" aria-live="polite" hidden></div>
+    </section>
+
+    <section class="counts" aria-label="今日報到人數">
+      <div class="stat">
+        <div class="label">今日累積</div>
+        <div class="value" id="total">–</div>
+        <div class="sub">人</div>
+      </div>
+      <div class="stat">
+        <div class="label">本小時新增</div>
+        <div class="value" id="hour-new">–</div>
+        <div class="sub" id="hour-label">&nbsp;</div>
+      </div>
+    </section>
+
+    <p class="status-line muted"><a href="stats.html">查看統計</a></p>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/checkin.js"></script>
+</body>
+</html>

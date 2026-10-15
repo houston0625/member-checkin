@@ -1,0 +1,211 @@
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --text: #1c2430;
+  --muted: #5d6878;
+  --border: #dde2ea;
+  --primary: #1f6feb;
+  --primary-hover: #1a5fd0;
+  --success: #1a7f45;
+  --success-bg: #e5f5ec;
+  --warning: #9a5b00;
+  --warning-bg: #fff3dc;
+  --danger: #b42318;
+  --danger-bg: #fdecea;
+  --chart-bar: #8fb4f2;
+  --chart-line: #1f6feb;
+  --chart-prev: #9aa4b2;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11151c;
+    --surface: #1a2029;
+    --text: #e6eaf0;
+    --muted: #9aa4b2;
+    --border: #2c3440;
+    --primary: #4c8df6;
+    --primary-hover: #6aa1f8;
+    --success: #5fd08e;
+    --success-bg: #12301f;
+    --warning: #f2b552;
+    --warning-bg: #352812;
+    --danger: #f2877d;
+    --danger-bg: #3a1a17;
+    --chart-bar: #35558a;
+    --chart-line: #6aa1f8;
+    --chart-prev: #6b7686;
+    --shadow: none;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+h1 { font-size: 1.6rem; margin: 0; }
+
+.muted { color: var(--muted); }
+
+a { color: var(--primary); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+/* ---------- 登記頁 ---------- */
+
+.checkin-page .container { max-width: 560px; }
+
+.checkin-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.checkin-form .row {
+  display: flex;
+  gap: 12px;
+}
+
+.checkin-form input {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.6rem;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+.checkin-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+button {
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button:hover { background: var(--primary-hover); }
+button:disabled { opacity: 0.6; cursor: wait; }
+
+.hint { font-size: 0.9rem; margin-top: 8px; }
+
+.result {
+  margin-top: 20px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.result[hidden] { display: none; }
+.result small { display: block; font-size: 0.95rem; font-weight: 400; margin-top: 4px; }
+.result.success { background: var(--success-bg); color: var(--success); }
+.result.duplicate { background: var(--warning-bg); color: var(--warning); }
+.result.error { background: var(--danger-bg); color: var(--danger); }
+
+.counts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* ---------- 數字卡片 ---------- */
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+}
+
+.stat .label { color: var(--muted); font-size: 0.95rem; }
+.stat .value { font-size: 2.2rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat .sub { color: var(--muted); font-size: 0.9rem; min-height: 1.35em; }
+.stat .up { color: var(--success); }
+.stat .down { color: var(--danger); }
+
+/* ---------- 統計頁 ---------- */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stats-grid .stat.primary .value { font-size: 3rem; color: var(--primary); }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar input[type="date"] {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.toolbar button { font-size: 0.95rem; padding: 6px 14px; }
+
+.chart-wrap { position: relative; height: 360px; }
+
+.status-line { font-size: 0.9rem; margin-top: 12px; }
+.status-line.error { color: var(--danger); }
+
+@media (max-width: 480px) {
+  .checkin-form .row { flex-direction: column; }
+  .stats-grid { gap: 12px; }
+  .stat { padding: 12px 14px; }
+  .stat .value { font-size: 1.8rem; }
+  .stats-grid .stat.primary .value { font-size: 2.4rem; }
+  .chart-wrap { height: 280px; }
+}
